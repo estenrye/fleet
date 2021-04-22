@@ -1,0 +1,16 @@
+namespace: global-whoami
+targetCustomizations:
+- name: dev
+  clusterSelector:
+    matchLabels:
+      environment: dev
+  yaml:
+    overlays:
+      - dev
+- name: prod
+  clusterSelector:
+    matchLabels:
+      environment: prod
+  yaml:
+    overlays:
+      - prod

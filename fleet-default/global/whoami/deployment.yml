@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: whoami
+    region: global
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: whoami
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: whoami
+        image: containous/whoami:v1.5.0
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: "1"
+            memory: "20m"
+          requests:
+            cpu: 500m
+            memory: 10m
