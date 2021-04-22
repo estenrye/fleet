@@ -1,0 +1,18 @@
+kind: GitRepo
+apiVersion: fleet.cattle.io/v1alpha1
+metadata:
+  name: fleet-default
+  namespace: fleet-default
+spec:
+  branch: master
+  clientSecretName: gitrepo-auth-xkfcf
+  insecureSkipTLSVerify: false
+  paths:
+  - /fleet-default
+  repo: https://github.com/estenrye/fleet.git
+  serviceAccount: ""
+  targets:
+  - name: dev
+    clusterSelector:
+      matchLabels:
+        environment: dev
