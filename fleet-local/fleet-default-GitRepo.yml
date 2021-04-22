@@ -4,7 +4,7 @@ metadata:
   name: fleet-default
   namespace: fleet-default
 spec:
-  branch: master
+  branch: main
   clientSecretName: gitrepo-auth-xkfcf
   insecureSkipTLSVerify: false
   paths:
