@@ -19,12 +19,16 @@ spec:
       containers:
       - name: whoami
         image: containous/whoami:v1.5.0
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 3000
+          fsGroup: 2000 
         ports:
         - containerPort: 80
         resources:
           limits:
             cpu: "1"
-            memory: "20m"
+            memory: 50m
           requests:
             cpu: 500m
-            memory: 10m
+            memory: 25m
