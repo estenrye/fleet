@@ -9,3 +9,4 @@ spec:
       selector:
         dnsZones:
         - prod.ryezone.com
+        - global.prod.ryezone.com
