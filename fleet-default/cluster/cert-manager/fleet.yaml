@@ -4,8 +4,8 @@ targetCustomizations:
     matchLabels:
       platform.ryezone.com/environment: dev
   yaml:
-    overlays:
-      - dev
+    # overlays:
+    #   - dev
 - name: prod
   clusterSelector:
     matchLabels:
