@@ -1,0 +1,10 @@
+apiVersion: catalog.cattle.io/v1
+kind: ClusterRepo
+metadata:
+  annotations:
+    field.cattle.io/description: cert-manager chart repository
+  name: jetstack
+spec:
+  clientSecret: null
+  url: https://charts.jetstack.io
+type: catalog.cattle.io.clusterrepo
