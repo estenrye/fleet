@@ -1,0 +1,11 @@
+spec:
+  acme:
+    solvers:
+    - dns01:
+        cloudflare:
+          apiTokenSecretRef:
+            key: api-token
+            name: cert-manager-issuer-secret
+      selector:
+        dnsZones:
+        - prod.ryezone.com

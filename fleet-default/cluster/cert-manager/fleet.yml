@@ -1,0 +1,16 @@
+namespace: cert-manager
+targetCustomizations:
+- name: dev
+  clusterSelector:
+    matchLabels:
+      platform.ryezone.com/environment: dev
+  yaml:
+    overlays:
+      - dev
+- name: prod
+  clusterSelector:
+    matchLabels:
+      platform.ryezone.com/environment: prod
+  yaml:
+    overlays:
+      - prod
