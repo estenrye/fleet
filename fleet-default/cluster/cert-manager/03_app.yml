@@ -1,0 +1,263 @@
+apiVersion: catalog.cattle.io/v1
+kind: App
+metadata:
+  name: cert-manager
+  namespace: default
+spec:
+  chart:
+    metadata:
+      annotations:
+        catalog.cattle.io/ui-source-repo: jetstack
+        catalog.cattle.io/ui-source-repo-type: cluster
+      apiVersion: v1
+      appVersion: v1.3.1
+      description: A Helm chart for cert-manager
+      home: https://github.com/jetstack/cert-manager
+      icon: https://raw.githubusercontent.com/jetstack/cert-manager/master/logo/logo.png
+      keywords:
+      - cert-manager
+      - kube-lego
+      - letsencrypt
+      - tls
+      maintainers:
+      - email: james@jetstack.io
+        name: munnerz
+      name: cert-manager
+      sources:
+      - https://github.com/jetstack/cert-manager
+      version: v1.3.1
+    values:
+      affinity: {}
+      cainjector:
+        affinity: {}
+        containerSecurityContext: {}
+        enabled: true
+        extraArgs: null
+        image:
+          pullPolicy: IfNotPresent
+          repository: quay.io/jetstack/cert-manager-cainjector
+        nodeSelector: {}
+        podLabels: {}
+        replicaCount: 1
+        resources: {}
+        securityContext: {}
+        serviceAccount:
+          automountServiceAccountToken: true
+          create: true
+        strategy: {}
+        tolerations: null
+      clusterResourceNamespace: ""
+      containerSecurityContext: {}
+      extraArgs: null
+      extraEnv: null
+      featureGates: ""
+      global:
+        imagePullSecrets: null
+        leaderElection:
+          namespace: kube-system
+        logLevel: 2
+        podSecurityPolicy:
+          enabled: false
+          useAppArmor: true
+        priorityClassName: ""
+        rbac:
+          create: true
+      image:
+        pullPolicy: IfNotPresent
+        repository: quay.io/jetstack/cert-manager-controller
+      ingressShim: {}
+      installCRDs: false
+      nodeSelector: {}
+      podLabels: {}
+      prometheus:
+        enabled: true
+        servicemonitor:
+          enabled: false
+          interval: 60s
+          labels: {}
+          path: /metrics
+          prometheusInstance: default
+          scrapeTimeout: 30s
+          targetPort: 9402
+      replicaCount: 1
+      resources: {}
+      securityContext: {}
+      serviceAccount:
+        automountServiceAccountToken: true
+        create: true
+      strategy: {}
+      tolerations: null
+      volumeMounts: null
+      volumes: null
+      webhook:
+        affinity: {}
+        containerSecurityContext: {}
+        extraArgs: null
+        hostNetwork: false
+        image:
+          pullPolicy: IfNotPresent
+          repository: quay.io/jetstack/cert-manager-webhook
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        nodeSelector: {}
+        podLabels: {}
+        readinessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 1
+        replicaCount: 1
+        resources: {}
+        securePort: 10250
+        securityContext: {}
+        serviceAccount:
+          automountServiceAccountToken: true
+          create: true
+        strategy: {}
+        timeoutSeconds: 10
+        tolerations: null
+  helmVersion: 3
+  name: cert-manager
+  namespace: cert-manager
+  resources:
+  - apiVersion: v1
+    kind: ServiceAccount
+    name: cert-manager-cainjector
+    namespace: default
+  - apiVersion: v1
+    kind: ServiceAccount
+    name: cert-manager
+    namespace: default
+  - apiVersion: v1
+    kind: ServiceAccount
+    name: cert-manager-webhook
+    namespace: default
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    name: cert-manager-cainjector
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    name: cert-manager-controller-issuers
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    name: cert-manager-controller-clusterissuers
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    name: cert-manager-controller-certificates
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    name: cert-manager-controller-orders
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    name: cert-manager-controller-challenges
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    name: cert-manager-controller-ingress-shim
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    name: cert-manager-view
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    name: cert-manager-edit
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    name: cert-manager-controller-approve:cert-manager-io
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    name: cert-manager-webhook:subjectaccessreviews
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    name: cert-manager-cainjector
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    name: cert-manager-controller-issuers
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    name: cert-manager-controller-clusterissuers
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    name: cert-manager-controller-certificates
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    name: cert-manager-controller-orders
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    name: cert-manager-controller-challenges
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    name: cert-manager-controller-ingress-shim
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    name: cert-manager-controller-approve:cert-manager-io
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    name: cert-manager-webhook:subjectaccessreviews
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: Role
+    name: cert-manager-cainjector:leaderelection
+    namespace: kube-system
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: Role
+    name: cert-manager:leaderelection
+    namespace: kube-system
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: Role
+    name: cert-manager-webhook:dynamic-serving
+    namespace: default
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: RoleBinding
+    name: cert-manager-cainjector:leaderelection
+    namespace: kube-system
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: RoleBinding
+    name: cert-manager:leaderelection
+    namespace: kube-system
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: RoleBinding
+    name: cert-manager-webhook:dynamic-serving
+    namespace: default
+  - apiVersion: v1
+    kind: Service
+    name: cert-manager
+    namespace: default
+  - apiVersion: v1
+    kind: Service
+    name: cert-manager-webhook
+    namespace: default
+  - apiVersion: apps/v1
+    kind: Deployment
+    name: cert-manager-cainjector
+    namespace: default
+  - apiVersion: apps/v1
+    kind: Deployment
+    name: cert-manager
+    namespace: default
+  - apiVersion: apps/v1
+    kind: Deployment
+    name: cert-manager-webhook
+    namespace: default
+  - apiVersion: admissionregistration.k8s.io/v1
+    kind: MutatingWebhookConfiguration
+    name: cert-manager-webhook
+  - apiVersion: monitoring.coreos.com/v1
+    kind: ServiceMonitor
+    name: cert-manager
+    namespace: default
+  - apiVersion: admissionregistration.k8s.io/v1
+    kind: ValidatingWebhookConfiguration
+    name: cert-manager-webhook
+  values:
+    global:
+      cattle:
+        clusterId: c-ptd7g
+        clusterName: dev
+        systemDefaultRegistry: ""
+      systemDefaultRegistry: ""
+    prometheus:
+      servicemonitor:
+        enabled: true
