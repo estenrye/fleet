@@ -1,3 +1,4 @@
+defaultNamespace: cert-manager
 targetCustomizations:
 - name: dev
   clusterSelector:
