@@ -4,6 +4,7 @@ helm:
 targetCustomizations:
 - helm:
     values:
+      installCRDs: false
       prometheus:
         enabled: true
         servicemonitor:
