@@ -11,10 +11,10 @@ metadata:
 spec:
   tls:
   - hosts:
-      - whoami.global.dev.rancher.ryezone.com
+      - whoami.global.dev.ryezone.com
     secretName: whoami-tls
   rules:
-  - host: whoami.global.dev.rancher.ryezone.com
+  - host: whoami.global.dev.ryezone.com
     http:
       paths:
       - path: /
