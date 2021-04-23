@@ -15,4 +15,4 @@ spec:
   - name: dev
     clusterSelector:
       matchLabels:
-        environment: dev
+        platform.ryezone.com/environment: dev
