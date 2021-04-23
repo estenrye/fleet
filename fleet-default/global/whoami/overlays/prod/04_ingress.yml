@@ -6,8 +6,8 @@ metadata:
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-cloudflare-dns01
   labels:
+    ryezone.com/region: global
     app: whoami
-    region: global
 spec:
   tls:
   - hosts:

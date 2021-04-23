@@ -3,5 +3,5 @@ kind: Namespace
 metadata: 
   name: global-whoami
   labels:
-    region: global
+    ryezone.com/region: global
     app: whoami

@@ -4,8 +4,8 @@ metadata:
   name: whoami
   namespace: global-whoami
   labels:
+    ryezone.com/region: global
     app: whoami
-    region: global
 spec:
   selector:
     app: whoami
