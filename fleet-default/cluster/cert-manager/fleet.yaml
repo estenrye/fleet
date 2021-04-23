@@ -1,4 +1,4 @@
-namespace: cert-manager
+defaultNamespace: cert-manager
 helm:
   chart: https://github.com/estenrye/fleet/raw/main/charts/cert-manager-v1.3.1.tgz
 targetCustomizations:
