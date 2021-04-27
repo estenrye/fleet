@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: whoami
+  namespace: global-whoami
+  labels:
+    ryezone.com/region: global
+    app: whoami
+spec:
+  selector:
+    app: whoami
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8080
