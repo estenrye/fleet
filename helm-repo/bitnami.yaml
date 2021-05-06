@@ -1,0 +1,10 @@
+apiVersion: catalog.cattle.io/v1
+kind: ClusterRepo
+metadata:
+  annotations:
+    field.cattle.io/description: Bitnami Helm Chart Repository
+  name: bitnami
+spec:
+  clientSecret: null
+  url: https://charts.bitnami.com/bitnami
+type: catalog.cattle.io.clusterrepo
