@@ -1,0 +1,10 @@
+apiVersion: catalog.cattle.io/v1
+kind: ClusterRepo
+metadata:
+  annotations:
+    field.cattle.io/description: Smallstep Certificates Helm Repository
+  name: smallstep
+spec:
+  clientSecret: null
+  url: https://smallstep.github.io/helm-charts/
+type: catalog.cattle.io.clusterrepo
