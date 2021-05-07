@@ -1,11 +1,11 @@
 kind: GitRepo
 apiVersion: fleet.cattle.io/v1alpha1
 metadata:
-  name: git-repo
-  namespace: fleet-default
+  name: git-repo-default
+  namespace: fleet-local
 spec:
   branch: main
-  clientSecretName: gitrepo-auth-xkfcf
+  clientSecretName: gitrepo-auth-mbv7p
   insecureSkipTLSVerify: false
   paths:
   - /GitRepo/default
