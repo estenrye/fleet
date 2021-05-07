@@ -12,7 +12,7 @@ spec:
   repo: https://github.com/estenrye/fleet.git
   serviceAccount: ""
   targets:
-  - name: dev
+  - name: local
     clusterSelector:
       matchLabels:
-        platform.ryezone.com/environment: dev
+        platform.ryezone.com/environment: local
