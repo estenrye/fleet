@@ -6,6 +6,13 @@ targetCustomizations:
   yaml:
     overlays:
       - dev
+- name: local
+  clusterSelector:
+    matchLabels:
+      name: local
+  yaml:
+    overlays:
+      - local
 - name: prod
   clusterSelector:
     matchLabels:

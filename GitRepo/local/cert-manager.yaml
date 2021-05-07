@@ -1,14 +1,14 @@
 kind: GitRepo
 apiVersion: fleet.cattle.io/v1alpha1
 metadata:
-  name: helm-repo-local
-  namespace: fleet-local
+  name: cert-manager
+  namespace: fleet-default
 spec:
   branch: main
   clientSecretName: gitrepo-auth-mbv7p
   insecureSkipTLSVerify: false
   paths:
-  - /helm-repo
+  - /cert-manager
   repo: https://github.com/estenrye/fleet.git
   serviceAccount: ""
   targets:

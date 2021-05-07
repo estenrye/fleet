@@ -1,18 +1,15 @@
 kind: GitRepo
 apiVersion: fleet.cattle.io/v1alpha1
 metadata:
-  name: fleet-default
+  name: monitoring-default
   namespace: fleet-default
 spec:
   branch: main
-  clientSecretName: gitrepo-auth-xkfcf
+  clientSecretName: gitrepo-auth-mbv7p
   insecureSkipTLSVerify: false
   paths:
-  - /fleet-default
+  - /monitoring
   repo: https://github.com/estenrye/fleet.git
   serviceAccount: ""
   targets:
-  - name: dev
-    clusterSelector:
-      matchLabels:
-        platform.ryezone.com/environment: dev
+  - clusterSelector: {}

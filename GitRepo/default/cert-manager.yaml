@@ -1,0 +1,15 @@
+kind: GitRepo
+apiVersion: fleet.cattle.io/v1alpha1
+metadata:
+  name: cert-manager
+  namespace: fleet-default
+spec:
+  branch: main
+  clientSecretName: gitrepo-auth-xkfcf
+  insecureSkipTLSVerify: false
+  paths:
+  - /cert-manager
+  repo: https://github.com/estenrye/fleet.git
+  serviceAccount: ""
+  targets:
+  - clusterSelector: {}
