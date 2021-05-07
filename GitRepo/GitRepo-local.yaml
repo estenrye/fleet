@@ -1,14 +1,14 @@
 kind: GitRepo
 apiVersion: fleet.cattle.io/v1alpha1
 metadata:
-  name: GitRepo
+  name: git-repo
   namespace: fleet-local
 spec:
   branch: main
   clientSecretName: gitrepo-auth-mbv7p
   insecureSkipTLSVerify: false
   paths:
-  - /GitRepo
+  - /GitRepo/local
   repo: https://github.com/estenrye/fleet.git
   serviceAccount: ""
   targets:

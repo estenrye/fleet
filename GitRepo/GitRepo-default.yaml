@@ -1,7 +1,7 @@
 kind: GitRepo
 apiVersion: fleet.cattle.io/v1alpha1
 metadata:
-  name: GitRepo
+  name: git-repo
   namespace: fleet-default
 spec:
   branch: main
