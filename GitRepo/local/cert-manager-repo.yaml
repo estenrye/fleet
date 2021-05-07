@@ -1,8 +1,8 @@
 kind: GitRepo
 apiVersion: fleet.cattle.io/v1alpha1
 metadata:
-  name: cert-manager
-  namespace: fleet-default
+  name: cert-manager-repo
+  namespace: fleet-local
 spec:
   branch: main
   clientSecretName: gitrepo-auth-mbv7p
