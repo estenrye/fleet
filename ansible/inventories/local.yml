@@ -7,3 +7,4 @@ all:
   vars:
     kube_context: local
     cert_manager_cloudflare_api_token: "{{ lookup ('env', 'CLOUDFLARE_API_TOKEN') }}"
+    hpe_backend: 10.5.33.1
