@@ -1,0 +1,3 @@
+defaultNamespace: smallstep-ca
+targetCustomizations:
+- clusterSelector: {}

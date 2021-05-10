@@ -1,0 +1,16 @@
+defaultNamespace: cattle-monitoring-system
+helm:
+  chart: mariadb
+  repo: https://charts.bitnami.com/bitnami
+  releaseName: mariadb
+  version: 9.3.11
+targetCustomizations:
+- helm:
+    values:
+      global:
+        storageClass: hpe-storageclass
+      auth:
+        database: smallstep-ca
+        username: step-ca
+        password: testPassword
+    clusterSelector: {}
