@@ -5,7 +5,7 @@ metadata:
   annotations:
     storageclass.kubernetes.io/is-default-class: "true"
   name: hpe-storageclass
-provisioner: nas.ryezone.con
+provisioner: nas.ryezone.com
 parameters:
   csi.storage.k8s.io/controller-expand-secret-name: truenas-secret
   csi.storage.k8s.io/controller-expand-secret-namespace: hpe-storage
