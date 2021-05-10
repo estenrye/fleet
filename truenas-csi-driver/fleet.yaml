@@ -1,2 +1,3 @@
+defaultNamespace: hpe-storage
 targetCustomizations:
 - clusterSelector: {}
