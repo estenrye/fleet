@@ -7,6 +7,6 @@ all:
       ansible_host: controlplane01.prod.ryezone.com
       ansible_python_interpreter: /usr/bin/python3
   vars:
-    kube_context: dev
+    kube_context: default
     cert_manager_cloudflare_api_token: "{{ lookup ('env', 'CLOUDFLARE_API_TOKEN') }}"
     hpe_backend: nas.ryezone.com
