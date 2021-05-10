@@ -4,8 +4,7 @@ all:
       ansible_connection: local
       ansible_python_interpreter: /usr/bin/python3
     jumpbox:
-      ansible_host: controlplane01.dev.ryezone.com
-      ansible_connection: local
+      ansible_host: controlplane01.prod.ryezone.com
       ansible_python_interpreter: /usr/bin/python3
   vars:
     kube_context: dev
