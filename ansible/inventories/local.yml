@@ -1,10 +1,9 @@
 all:
   hosts:
     jumpbox:
-      ansible_host: 127.0.0.1
-      ansible_connection: local
+      ansible_host: controlplane01.rancher.ryezone.com
       ansible_python_interpreter: /usr/bin/python3
   vars:
-    kube_context: local
+    kube_context: default
     cert_manager_cloudflare_api_token: "{{ lookup ('env', 'CLOUDFLARE_API_TOKEN') }}"
-    hpe_backend: 10.5.33.1
+    hpe_backend: nas.ryezone.com
