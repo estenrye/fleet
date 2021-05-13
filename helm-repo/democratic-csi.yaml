@@ -1,0 +1,10 @@
+apiVersion: catalog.cattle.io/v1
+kind: ClusterRepo
+metadata:
+  annotations:
+    field.cattle.io/description: democratic-csi Helm Repository
+  name: democratic-csi
+spec:
+  clientSecret: null
+  url: https://democratic-csi.github.io/charts/
+type: catalog.cattle.io.clusterrepo
