@@ -8,7 +8,7 @@ targetCustomizations:
 - helm:
     values:
       global:
-        storageClass: hpe-storageclass
+        storageClass: truenas-iscsi-csi
       auth:
         database: smallstep-ca
         username: step-ca
