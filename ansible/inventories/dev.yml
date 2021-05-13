@@ -8,6 +8,7 @@ all:
       ansible_connection: local
       ansible_python_interpreter: /usr/bin/python3
   vars:
+    platform_environment: dev
     kube_context: dev
     cert_manager_cloudflare_api_token: "{{ lookup ('env', 'CLOUDFLARE_API_TOKEN') }}"
     hpe_backend: nas.ryezone.com

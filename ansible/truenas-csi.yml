@@ -23,14 +23,14 @@
           driver:
             config:
               driver: freenas-iscsi
-              # instance_id:
-              # httpConnection:
-              #   protocol: https
-              #   host: "{{ hpe_backend }}"
-              #   port: 443
-              #   apiKey: "{{ lookup('password', 'secrets/hpe-csi_api_key chars=ascii_letters,digits length=64') }}"
-              #   allowInsecure: false
-              #   apiVersion: 2
+              instance_id:
+              httpConnection:
+                protocol: https
+                host: "{{ hpe_backend }}"
+                port: 443
+                apiKey: "{{ lookup('password', 'secrets/hpe-csi_api_key chars=ascii_letters,digits length=64') }}"
+                allowInsecure: false
+                apiVersion: 2
               sshConnection:
                 host: "{{ hpe_backend }}"
                 port: 22
@@ -56,7 +56,7 @@
                 # 512, 1K, 2K, 4K, 8K, 16K, 64K, 128K default is 16K
                 zvolBlocksize:
               iscsi:
-                targetPortal: "server:3260"
+                targetPortal: "{{ hpe_backend }}:3260"
                 targetPortals: []
                 # leave empty to omit usage of -I with iscsiadm
                 interface:
@@ -66,8 +66,7 @@
                 # default is "{{ name }}"
                 #nameTemplate: "{{ parameters.[csi.storage.k8s.io/pvc/namespace] }}-{{ parameters.[csi.storage.k8s.io/pvc/name] }}"
                 namePrefix: csi-
-                #TODO: make suffix reflect cluster name.
-                nameSuffix: "-clustera"
+                nameSuffix: "-{{ platform_environment }}"
                 # add as many as needed
                 targetGroups:
                   # get the correct ID from the "portal" section in the UI
