@@ -93,7 +93,7 @@
           # add note here about volume expansion requirements
           storageClasses:
           - name: truenas-iscsi-csi
-            defaultClass: false
+            defaultClass: true
             reclaimPolicy: Delete
             volumeBindingMode: Immediate
             allowVolumeExpansion: true
