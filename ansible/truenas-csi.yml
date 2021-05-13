@@ -24,13 +24,13 @@
             config:
               driver: freenas-iscsi
               # instance_id:
-              httpConnection:
-                protocol: https
-                host: "{{ hpe_backend }}"
-                port: 443
-                apiKey: "{{ lookup('password', 'secrets/hpe-csi_api_key chars=ascii_letters,digits length=64') }}"
-                allowInsecure: false
-                apiVersion: 2
+              # httpConnection:
+              #   protocol: https
+              #   host: "{{ hpe_backend }}"
+              #   port: 443
+              #   apiKey: "{{ lookup('password', 'secrets/hpe-csi_api_key chars=ascii_letters,digits length=64') }}"
+              #   allowInsecure: false
+              #   apiVersion: 2
               sshConnection:
                 host: "{{ hpe_backend }}"
                 port: 22
@@ -66,6 +66,7 @@
                 # default is "{{ name }}"
                 #nameTemplate: "{{ parameters.[csi.storage.k8s.io/pvc/namespace] }}-{{ parameters.[csi.storage.k8s.io/pvc/name] }}"
                 namePrefix: csi-
+                #TODO: make suffix reflect cluster name.
                 nameSuffix: "-clustera"
                 # add as many as needed
                 targetGroups:
