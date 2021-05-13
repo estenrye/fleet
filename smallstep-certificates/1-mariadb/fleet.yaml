@@ -1,4 +1,4 @@
-defaultNamespace: cattle-monitoring-system
+defaultNamespace: smallstep-ca
 helm:
   chart: mariadb
   repo: https://charts.bitnami.com/bitnami
