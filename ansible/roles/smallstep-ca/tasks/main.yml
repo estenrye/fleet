@@ -1,0 +1,221 @@
+- name: Add chart repos.
+  community.kubernetes.helm_repository:
+    name: "{{ item.name }}"
+    repo_url: "{{ item.repo_url }}"
+  loop:
+    - name: bitnami
+      repo_url: https://charts.bitnami.com/bitnami
+    - name: smallstep
+      repo_url: https://smallstep.github.io/helm-charts
+
+- name: Create CA PKI directory
+  ansible.builtin.file:
+    state: directory
+    mode: 0600
+    owner: root
+    path: "{{ kubernetes_pki_directory }}/smallstep-ca"
+  become: true
+
+# Generate Root and Intermediate Keys
+- name: Generate a Root CA private key
+  community.crypto.openssl_privatekey:
+    path: "{{ kubernetes_pki_directory }}/smallstep-ca/root_ca.key"
+    state: present
+    type: ECC
+    curve: secp384r1
+    cipher: auto
+    passphrase: "{{ lookup('password', 'secrets/smallstep_root_ca_key_password chars=ascii_letters,digits length=256') }}"
+    return_content: true
+    select_crypto_backend: cryptography
+  register: smallstep_root_ca_key
+  become: true
+
+- name: Generate an OpenSSL Root Certificate Signing Request
+  community.crypto.openssl_csr:
+    path: "{{ kubernetes_pki_directory }}/smallstep-ca/root_ca.csr"
+    privatekey_path: "{{ kubernetes_pki_directory }}/smallstep-ca/root_ca.key"
+    privatekey_passphrase: "{{ lookup('password', 'secrets/smallstep_root_ca_key_password chars=ascii_letters,digits length=256') }}"
+    common_name: Ryezone Labs Root CA
+    organization_name: Ryezone Labs
+    country_name: US
+    locality_name: Minnesota
+    basic_constraints_critical: true
+    basic_constraints:
+      - CA:TRUE
+      - pathlen:1
+    key_usage_critical: true
+    key_usage:
+      - keyCertSign
+      - cRLSign
+  become: true
+
+- name: Generate a self-signed Root CA Certificate
+  community.crypto.x509_certificate:
+    path: "{{ kubernetes_pki_directory }}/smallstep-ca/root_ca.crt"
+    csr_path: "{{ kubernetes_pki_directory }}/smallstep-ca/root_ca.csr"
+    privatekey_path: "{{ kubernetes_pki_directory }}/smallstep-ca/root_ca.key"
+    privatekey_passphrase: "{{ lookup('password', 'secrets/smallstep_root_ca_key_password chars=ascii_letters,digits length=256') }}"
+    return_content: true
+    provider: selfsigned
+    selfsigned_not_before: +0s
+    selfsigned_not_after: +3650d
+  register: smallstep_root_ca_certificate
+  become: true
+
+- name: Generate an Intermediate CA private key.
+  community.crypto.openssl_privatekey:
+    path: "{{ kubernetes_pki_directory }}/smallstep-ca/intermediate_ca.key"
+    state: present
+    type: ECC
+    curve: secp384r1
+    cipher: auto
+    passphrase: "{{ lookup('password', 'secrets/smallstep_intermediate_ca_key_password chars=ascii_letters,digits length=256') }}"
+    return_content: true
+    select_crypto_backend: cryptography
+  register: smallstep_intermediate_ca_key
+  become: true
+
+- name: Generate an OpenSSL Intermediate Certificate Signing Request
+  community.crypto.openssl_csr:
+    path: "{{ kubernetes_pki_directory }}/smallstep-ca/intermediate_ca.csr"
+    privatekey_path: "{{ kubernetes_pki_directory }}/smallstep-ca/intermediate_ca.key"
+    privatekey_passphrase: "{{ lookup('password', 'secrets/smallstep_intermediate_ca_key_password chars=ascii_letters,digits length=256') }}"
+    common_name: Ryezone Labs Intermediate CA
+    organization_name: Ryezone Labs
+    country_name: US
+    locality_name: Minnesota
+    basic_constraints_critical: true
+    basic_constraints:
+      - CA:TRUE
+      - pathlen:0
+    key_usage_critical: true
+    key_usage:
+      - keyCertSign
+      - cRLSign
+  become: true
+
+- name: Generate a Root Signed Intermediate CA Certificate
+  community.crypto.x509_certificate:
+    path: "{{ kubernetes_pki_directory }}/smallstep-ca/intermediate_ca.crt"
+    csr_path: "{{ kubernetes_pki_directory }}/smallstep-ca/intermediate_ca.csr"
+    ownca_path: "{{ kubernetes_pki_directory }}/smallstep-ca/root_ca.crt"
+    ownca_privatekey_path: "{{ kubernetes_pki_directory }}/smallstep-ca/root_ca.key"
+    ownca_privatekey_passphrase: "{{ lookup('password', 'secrets/smallstep_root_ca_key_password chars=ascii_letters,digits length=256') }}"
+    return_content: true
+    provider: ownca
+    ownca_not_before: +0s
+    ownca_not_after: +1824d
+  register: smallstep_intermediate_ca_certificate
+  become: true
+
+- set_fact:
+    rendered_step_certificates_secrets: "{{ lookup('template', '../templates/step-certificates-secrets.yml.j2') }}"
+    rendered_step_certificates_certificates: "{{ lookup('template', '../templates/step-certificates-certificates.yml.j2') }}"
+    rendered_step_certificates_ca_password: "{{ lookup('template', '../templates/step-certificates-ca-password.yml.j2') }}"
+    rendered_step_certificates_config: "{{ lookup('template', '../templates/step-certificates-config.yml.j2') }}"
+
+- name: Create Namespace
+  community.kubernetes.k8s:
+    api_version: v1
+    kind: namespace
+    name: smallstep-ca
+    state: present
+
+- name: Create Step Certificate Config
+  community.kubernetes.k8s:
+    state: present
+    definition: "{{ rendered_step_certificates_config }}"
+
+- name: Create Step Certificates Root and Intermediate Certificates
+  community.kubernetes.k8s:
+    state: present
+    definition: "{{ rendered_step_certificates_certificates }}"
+
+- name: Create Step Certificates Root and Intermediate Private Keys
+  community.kubernetes.k8s:
+    state: present
+    definition: "{{ rendered_step_certificates_secrets }}"
+
+- name: Create Step Certificates Intermediate Password File
+  community.kubernetes.k8s:
+    state: present
+    definition: "{{ rendered_step_certificates_ca_password }}"
+
+
+- name: Deploy MariaDB
+  community.kubernetes.helm:
+    name: mariadb
+    chart_ref: bitnami/mariadb
+    chart_version: 9.3.11
+    release_namespace: smallstep-ca
+    create_namespace: false
+    values:
+      architecture: standalone
+      auth:
+        database: smallstepca
+        username: stepca
+        password: "{{ lookup('password', 'secrets/step-ca_user_password chars=ascii_letters,digits length=64') }}"
+        replicationUser: replicator
+        replicationPassword: "{{ lookup('password', 'secrets/step-ca_replication_password chars=ascii_letters,digits length=64') }}"
+        rootPassword: "{{ lookup('password', 'secrets/step-ca_root_password chars=ascii_letters,digits length=64') }}"
+      primary:
+        persistence:
+          enabled: true
+          storageClass: "truenas-iscsi-csi"
+          accessModes:
+            - ReadWriteOnce
+          size: 8Gi
+        resources:
+          limits:
+            memory: 512Mi
+            cpu: 300m
+          requests:
+            memory: 100Mi
+            cpu: 100m
+      secondary:
+        persistence:
+          enabled: true
+          storageClass: "truenas-iscsi-csi"
+          accessModes:
+            - ReadWriteOnce
+          size: 8Gi
+        resources:
+          limits:
+            memory: 512Mi
+            cpu: 300m
+          requests:
+            memory: 100Mi
+            cpu: 100m
+      metrics:
+        enabled: true
+        resources:
+          limits:
+            memory: 256Mi
+            cpu: 100m
+          requests:
+            memory: 256Mi
+            cpu: 100m
+        serviceMonitor:
+          enabled: true
+
+- name: Deploy Smallstep
+  community.kubernetes.helm:
+    name: ryezone-ca
+    chart_ref: smallstep/step-certificates
+    chart_version: 1.15.13
+    release_namespace: smallstep-ca
+    create_namespace: false
+    values:
+      autocert:
+        enabled: false
+      bootstrap:
+        configmaps: false
+        enabled: false
+        secrets: false
+      # ingress:
+      #   enabled: true
+      #   hosts:
+      #     host: ca.prod.ryezone.com
+      #     http:
+      #       paths:
+      #         - /

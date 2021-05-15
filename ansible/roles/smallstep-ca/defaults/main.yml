@@ -1,0 +1,1 @@
+kubernetes_pki_directory: /var/lib/rancher/rke2/server/tls
