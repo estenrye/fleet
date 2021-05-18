@@ -6,11 +6,14 @@ data:
       "federatedRoots": [],
       "crt": "/home/step/certs/intermediate_ca.crt",
       "key": "/home/step/secrets/intermediate_ca_key",
-      "address": ":9000",
+      "address": "0.0.0.0:9000",
       "dnsNames": [
-          "ca.prod.ryezone.com",
-          "ryezone-ca-step-certificates.smallstep-ca.svc.cluster.local",
-          "127.0.0.1"
+        "ca.prod.ryezone.com",
+        "node01.prod.ryezone.com",
+        "node02.prod.ryezone.com",
+        "node03.prod.ryezone.com",
+        "ryezone-ca-step-certificates.smallstep-ca.svc.cluster.local",
+        "127.0.0.1"
       ],
       "db": {
         "type": "mysql",
@@ -18,19 +21,54 @@ data:
         "database": "smallstepca"
       },
       "logger": {
-          "format": "text"
+        "format": "text"
       },
       "authority": {
-          "provisioners": []
+        "claims": {
+          "minTLSCertDuration": "5m",
+          "maxTLSCertDuration": "24h",
+          "defaultTLSCertDuration": "24h",
+          "disableRenewal": false,
+          "minHostSSHCertDuration": "5m",
+          "maxHostSSHCertDuration": "1680h",
+          "defaultHostSSHCertDuration": "720h",
+          "minUserSSHCertDuration": "5m",
+          "maxUserSSHCertDuration": "24h",
+          "defaultUserSSHCertDuration": "16h"
+        },
+        "provisioners": [
+          {
+            "type": "ACME",
+            "name": "acme",
+            "forceCN": true,
+            "claims": {},
+            "options": {
+              "x509": {
+                "templateFile": "templates/certs/x509/default.tpl"
+              }
+            }
+          },
+          {
+            "type": "OIDC",
+            "name": "Okta Provisioner",
+            "clientID": "{{ lookup('password', 'secrets/smallstep_oidc_clientid chars=ascii_letters,digits length=256') }}",
+            "clientSecret": "{{ lookup('password', 'secrets/smallstep_oidc_clientsecret chars=ascii_letters,digits length=256') }}",
+            "configurationEndpoint": "https://dev-199614.oktapreview.com/.well-known/openid-configuration",
+            "admins": [ "esten.rye@protolabs.com" ],
+            "domains": [ "protolabs.com" ],
+            "listenAddress": "0.0.0.0:32400",
+            "enableSSHCA": true
+          }
+        ]
       },
       "tls": {
-          "cipherSuites": [
-            "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305",
-            "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256"
-          ],
-          "minVersion": 1.2,
-          "maxVersion": 1.2,
-          "renegotiation": false
+        "cipherSuites": [
+          "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305",
+          "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256"
+        ],
+        "minVersion": 1.2,
+        "maxVersion": 1.2,
+        "renegotiation": false
       }
     }
   defaults.json: |-

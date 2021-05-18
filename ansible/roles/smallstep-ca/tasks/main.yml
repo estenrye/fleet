@@ -16,7 +16,7 @@
     path: "{{ kubernetes_pki_directory }}/smallstep-ca"
   become: true
 
-# Generate Root and Intermediate Keys
+# Generate Root Key, CSR, and Certificate
 - name: Generate a Root CA private key
   community.crypto.openssl_privatekey:
     path: "{{ kubernetes_pki_directory }}/smallstep-ca/root_ca.key"
@@ -62,6 +62,7 @@
   register: smallstep_root_ca_certificate
   become: true
 
+# Generate Intermediate Key, CSR, and Certificate
 - name: Generate an Intermediate CA private key.
   community.crypto.openssl_privatekey:
     path: "{{ kubernetes_pki_directory }}/smallstep-ca/intermediate_ca.key"
@@ -108,6 +109,77 @@
   register: smallstep_intermediate_ca_certificate
   become: true
 
+# - name: delete keys
+#   file:
+#     state: absent
+#     path: "{{ item }}"
+#   loop:
+#     - "{{ kubernetes_pki_directory }}/smallstep-ca/ssh_host_ca_ecdsa"
+#     - "{{ kubernetes_pki_directory }}/smallstep-ca/ssh_user_ca_ecdsa"
+#   become: true
+
+# Generate Host SSH CA Key
+- name: Generate Host SSH CA Key
+  ansible.builtin.command: 
+    argv:
+      - ssh-keygen
+      - -q
+      - -t
+      - ecdsa
+      - -b
+      - 384
+      - -f
+      - "{{ kubernetes_pki_directory }}/smallstep-ca/ssh_host_ca_ecdsa"
+      - -C
+      - ""
+      - -N 
+      - "{{ lookup('password', 'secrets/smallstep_intermediate_ca_key_password chars=ascii_letters,digits length=256') }}"
+    creates: "{{ kubernetes_pki_directory }}/smallstep-ca/ssh_host_ca_ecdsa"
+  become: true
+
+- name: Slurp ssh host ca key
+  ansible.builtin.slurp:
+    src: "{{ kubernetes_pki_directory }}/smallstep-ca/ssh_host_ca_ecdsa"
+  register: smallstep_ssh_host_ca_key
+  become: true
+
+- name: Slurp ssh host ca cert
+  ansible.builtin.slurp:
+    src: "{{ kubernetes_pki_directory }}/smallstep-ca/ssh_host_ca_ecdsa.pub"
+  register: smallstep_ssh_host_ca_cert
+  become: true
+
+# Generate Client SSH CA Key
+- name: Generate Host SSH CA Key
+  ansible.builtin.command: 
+    argv:
+      - ssh-keygen
+      - -q
+      - -t
+      - ecdsa
+      - -b
+      - 384
+      - -f
+      - "{{ kubernetes_pki_directory }}/smallstep-ca/ssh_user_ca_ecdsa"
+      - -C
+      - ""
+      - -N
+      - "{{ lookup('password', 'secrets/smallstep_intermediate_ca_key_password chars=ascii_letters,digits length=256') }}"
+    creates: "{{ kubernetes_pki_directory }}/smallstep-ca/ssh_user_ca_ecdsa"
+  become: true
+
+- name: Slurp ssh client ca key
+  ansible.builtin.slurp:
+    src: "{{ kubernetes_pki_directory }}/smallstep-ca/ssh_user_ca_ecdsa"
+  register: smallstep_ssh_user_ca_key
+  become: true
+
+- name: Slurp ssh client ca cert
+  ansible.builtin.slurp:
+    src: "{{ kubernetes_pki_directory }}/smallstep-ca/ssh_user_ca_ecdsa.pub"
+  register: smallstep_ssh_user_ca_cert
+  become: true
+
 - set_fact:
     rendered_step_certificates_secrets: "{{ lookup('template', '../templates/step-certificates-secrets.yml.j2') }}"
     rendered_step_certificates_certificates: "{{ lookup('template', '../templates/step-certificates-certificates.yml.j2') }}"
@@ -125,22 +197,25 @@
   community.kubernetes.k8s:
     state: present
     definition: "{{ rendered_step_certificates_config }}"
+  notify: delete step-ca pods
 
 - name: Create Step Certificates Root and Intermediate Certificates
   community.kubernetes.k8s:
     state: present
     definition: "{{ rendered_step_certificates_certificates }}"
+  notify: delete step-ca pods
 
 - name: Create Step Certificates Root and Intermediate Private Keys
   community.kubernetes.k8s:
     state: present
     definition: "{{ rendered_step_certificates_secrets }}"
+  notify: delete step-ca pods
 
 - name: Create Step Certificates Intermediate Password File
   community.kubernetes.k8s:
     state: present
     definition: "{{ rendered_step_certificates_ca_password }}"
-
+  notify: delete step-ca pods
 
 - name: Deploy MariaDB
   community.kubernetes.helm:
@@ -212,6 +287,10 @@
         configmaps: false
         enabled: false
         secrets: false
+      service:
+        type: NodePort
+        port: 443
+        targetPort: 9000
       # ingress:
       #   enabled: true
       #   hosts:
