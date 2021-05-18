@@ -22,9 +22,9 @@
     path: "{{ kubernetes_pki_directory }}/smallstep-ca/root_ca.key"
     state: present
     type: ECC
-    curve: secp384r1
+    curve: "{{ stepca_root_ca_curve }}"
     cipher: auto
-    passphrase: "{{ lookup('password', 'secrets/smallstep_root_ca_key_password chars=ascii_letters,digits length=256') }}"
+    passphrase: "{{ stepca_root_ca_password }}"
     return_content: true
     select_crypto_backend: cryptography
   register: smallstep_root_ca_key
@@ -34,15 +34,15 @@
   community.crypto.openssl_csr:
     path: "{{ kubernetes_pki_directory }}/smallstep-ca/root_ca.csr"
     privatekey_path: "{{ kubernetes_pki_directory }}/smallstep-ca/root_ca.key"
-    privatekey_passphrase: "{{ lookup('password', 'secrets/smallstep_root_ca_key_password chars=ascii_letters,digits length=256') }}"
-    common_name: Ryezone Labs Root CA
-    organization_name: Ryezone Labs
-    country_name: US
-    locality_name: Minnesota
+    privatekey_passphrase: "{{ stepca_root_ca_password }}"
+    common_name: "{{ stepca_root_ca_common_name }}"
+    organization_name: "{{ stepca_root_ca_organization_name }}"
+    country_name: "{{ stepca_root_ca_country_name }}"
+    locality_name: "{{ stepca_root_ca_locality_name }}"
     basic_constraints_critical: true
     basic_constraints:
       - CA:TRUE
-      - pathlen:1
+      - pathlen:{{ stepca_root_ca_pathlen }}
     key_usage_critical: true
     key_usage:
       - keyCertSign
@@ -54,11 +54,11 @@
     path: "{{ kubernetes_pki_directory }}/smallstep-ca/root_ca.crt"
     csr_path: "{{ kubernetes_pki_directory }}/smallstep-ca/root_ca.csr"
     privatekey_path: "{{ kubernetes_pki_directory }}/smallstep-ca/root_ca.key"
-    privatekey_passphrase: "{{ lookup('password', 'secrets/smallstep_root_ca_key_password chars=ascii_letters,digits length=256') }}"
+    privatekey_passphrase: "{{ stepca_root_ca_password }}"
     return_content: true
     provider: selfsigned
-    selfsigned_not_before: +0s
-    selfsigned_not_after: +3650d
+    selfsigned_not_before: "{{ stepca_root_ca_not_before }}"
+    selfsigned_not_after: "{{ stepca_root_ca_not_after }}"
   register: smallstep_root_ca_certificate
   become: true
 
@@ -68,9 +68,9 @@
     path: "{{ kubernetes_pki_directory }}/smallstep-ca/intermediate_ca.key"
     state: present
     type: ECC
-    curve: secp384r1
+    curve: "{{ stepca_intermediate_ca_curve }}"
     cipher: auto
-    passphrase: "{{ lookup('password', 'secrets/smallstep_intermediate_ca_key_password chars=ascii_letters,digits length=256') }}"
+    passphrase: "{{ stepca_intermediate_ca_password }}"
     return_content: true
     select_crypto_backend: cryptography
   register: smallstep_intermediate_ca_key
@@ -80,15 +80,15 @@
   community.crypto.openssl_csr:
     path: "{{ kubernetes_pki_directory }}/smallstep-ca/intermediate_ca.csr"
     privatekey_path: "{{ kubernetes_pki_directory }}/smallstep-ca/intermediate_ca.key"
-    privatekey_passphrase: "{{ lookup('password', 'secrets/smallstep_intermediate_ca_key_password chars=ascii_letters,digits length=256') }}"
-    common_name: Ryezone Labs Intermediate CA
-    organization_name: Ryezone Labs
-    country_name: US
-    locality_name: Minnesota
+    privatekey_passphrase: "{{ stepca_intermediate_ca_password }}"
+    common_name: "{{ stepca_intermediate_ca_common_name }}"
+    organization_name: "{{ stepca_intermediate_ca_organization_name }}"
+    country_name: "{{ stepca_intermediate_ca_country_name }}"
+    locality_name: "{{ stepca_intermediate_ca_locality_name }}"
     basic_constraints_critical: true
     basic_constraints:
       - CA:TRUE
-      - pathlen:0
+      - pathlen:{{ stepca_intermediate_ca_pathlen }}
     key_usage_critical: true
     key_usage:
       - keyCertSign
@@ -101,11 +101,11 @@
     csr_path: "{{ kubernetes_pki_directory }}/smallstep-ca/intermediate_ca.csr"
     ownca_path: "{{ kubernetes_pki_directory }}/smallstep-ca/root_ca.crt"
     ownca_privatekey_path: "{{ kubernetes_pki_directory }}/smallstep-ca/root_ca.key"
-    ownca_privatekey_passphrase: "{{ lookup('password', 'secrets/smallstep_root_ca_key_password chars=ascii_letters,digits length=256') }}"
+    ownca_privatekey_passphrase: "{{ stepca_root_ca_password }}"
     return_content: true
     provider: ownca
-    ownca_not_before: +0s
-    ownca_not_after: +1824d
+    ownca_not_before: "{{ stepca_intermediate_ca_not_before }}"
+    ownca_not_after: "{{ stepca_intermediate_ca_not_after }}"
   register: smallstep_intermediate_ca_certificate
   become: true
 
@@ -127,13 +127,13 @@
       - -t
       - ecdsa
       - -b
-      - 384
+      - "{{ stepca_ssh_host_ca_ecdsa_bits }}"
       - -f
       - "{{ kubernetes_pki_directory }}/smallstep-ca/ssh_host_ca_ecdsa"
       - -C
       - ""
       - -N 
-      - "{{ lookup('password', 'secrets/smallstep_intermediate_ca_key_password chars=ascii_letters,digits length=256') }}"
+      - "{{ stepca_ssh_host_ca_password }}"
     creates: "{{ kubernetes_pki_directory }}/smallstep-ca/ssh_host_ca_ecdsa"
   become: true
 
@@ -158,13 +158,13 @@
       - -t
       - ecdsa
       - -b
-      - 384
+      - "{{ stepca_ssh_user_ca_ecdsa_bits }}"
       - -f
       - "{{ kubernetes_pki_directory }}/smallstep-ca/ssh_user_ca_ecdsa"
       - -C
       - ""
       - -N
-      - "{{ lookup('password', 'secrets/smallstep_intermediate_ca_key_password chars=ascii_letters,digits length=256') }}"
+      - "{{ stepca_ssh_user_ca_password }}"
     creates: "{{ kubernetes_pki_directory }}/smallstep-ca/ssh_user_ca_ecdsa"
   become: true
 
@@ -190,7 +190,7 @@
   community.kubernetes.k8s:
     api_version: v1
     kind: namespace
-    name: smallstep-ca
+    name: "{{ stepca_k8s_namespace }}"
     state: present
 
 - name: Create Step Certificate Config
@@ -219,66 +219,66 @@
 
 - name: Deploy MariaDB
   community.kubernetes.helm:
-    name: mariadb
+    name: "{{ stepca_mariadb_helm_release_name }}"
     chart_ref: bitnami/mariadb
-    chart_version: 9.3.11
-    release_namespace: smallstep-ca
+    chart_version: "{{ stepca_mariadb_helm_chart_version }}"
+    release_namespace: "{{ stepca_k8s_namespace }}"
     create_namespace: false
     values:
-      architecture: standalone
+      architecture: "{{ stepca_mariadb_architecture }}"
       auth:
-        database: smallstepca
-        username: stepca
-        password: "{{ lookup('password', 'secrets/step-ca_user_password chars=ascii_letters,digits length=64') }}"
-        replicationUser: replicator
-        replicationPassword: "{{ lookup('password', 'secrets/step-ca_replication_password chars=ascii_letters,digits length=64') }}"
-        rootPassword: "{{ lookup('password', 'secrets/step-ca_root_password chars=ascii_letters,digits length=64') }}"
+        database: "{{ stepca_mariadb_database }}"
+        username: "{{ stepca_mariadb_user_username }}"
+        password: "{{ stepca_mariadb_user_password }}"
+        replicationUser: "{{ stepca_mariadb_replication_username }}"
+        replicationPassword: "{{ stepca_mariadb_replication_password }}"
+        rootPassword: "{{ stepca_mariadb_root_password }}"
       primary:
         persistence:
           enabled: true
-          storageClass: "truenas-iscsi-csi"
+          storageClass: "{{ stepca_mariadb_storage_class }}"
           accessModes:
             - ReadWriteOnce
-          size: 8Gi
+          size: "{{ stepca_mariadb_size }}"
         resources:
           limits:
-            memory: 512Mi
-            cpu: 300m
+            memory: "{{ stepca_mariadb_max_memory }}"
+            cpu: "{{ stepca_mariadb_max_cpu }}"
           requests:
-            memory: 100Mi
-            cpu: 100m
+            memory: "{{ stepca_mariadb_min_memory }}"
+            cpu: "{{ stepca_mariadb_min_cpu }}"
       secondary:
         persistence:
           enabled: true
-          storageClass: "truenas-iscsi-csi"
+          storageClass: "{{ stepca_mariadb_storage_class }}"
           accessModes:
             - ReadWriteOnce
-          size: 8Gi
+          size: "{{ stepca_mariadb_size }}"
         resources:
           limits:
-            memory: 512Mi
-            cpu: 300m
+            memory: "{{ stepca_mariadb_max_memory }}"
+            cpu: "{{ stepca_mariadb_max_cpu }}"
           requests:
-            memory: 100Mi
-            cpu: 100m
+            memory: "{{ stepca_mariadb_min_memory }}"
+            cpu: "{{ stepca_mariadb_min_cpu }}"
       metrics:
-        enabled: true
+        enabled: "{{ stepca_mariadb_monitoring_enabled }}"
         resources:
           limits:
-            memory: 256Mi
-            cpu: 100m
+            memory: "{{ stepca_mariadb_monitoring_max_memory }}"
+            cpu: "{{ stepca_mariadb_monitoring_max_cpu }}"
           requests:
-            memory: 256Mi
-            cpu: 100m
+            memory: "{{ stepca_mariadb_monitoring_min_memory }}"
+            cpu: "{{ stepca_mariadb_monitoring_min_cpu }}"
         serviceMonitor:
-          enabled: true
+          enabled: "{{ stepca_mariadb_monitoring_enabled }}"
 
 - name: Deploy Smallstep
   community.kubernetes.helm:
-    name: ryezone-ca
+    name: "{{ stepca_stepca_helm_release_name }}"
     chart_ref: smallstep/step-certificates
-    chart_version: 1.15.13
-    release_namespace: smallstep-ca
+    chart_version: "{{ stepca_stepca_helm_chart_version }}"
+    release_namespace: "{{ stepca_k8s_namespace }}"
     create_namespace: false
     values:
       autocert:
@@ -291,10 +291,53 @@
         type: NodePort
         port: 443
         targetPort: 9000
-      # ingress:
-      #   enabled: true
-      #   hosts:
-      #     host: ca.prod.ryezone.com
-      #     http:
-      #       paths:
-      #         - /
+
+- name: Configure NodePort
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        annotations:
+          meta.helm.sh/release-name: "{{ stepca_stepca_helm_release_name }}"
+          meta.helm.sh/release-namespace: "{{ stepca_k8s_namespace }}"
+        labels:
+          app.kubernetes.io/instance: "{{ stepca_stepca_helm_release_name }}"
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: step-certificates
+          app.kubernetes.io/version: 0.15.13
+          helm.sh/chart: step-certificates-{{ stepca_stepca_helm_chart_version }}
+        name: "{{ stepca_stepca_helm_release_name }}-step-certificates"
+        namespace: "{{ stepca_k8s_namespace }}"
+      spec:
+        ports:
+        - name: https
+          nodePort: "{{ stepca_nodeport }}"
+          port: 443
+          protocol: TCP
+          targetPort: 9000
+        selector:
+          app.kubernetes.io/instance: "{{ stepca_stepca_helm_release_name }}"
+          app.kubernetes.io/name: step-certificates
+        type: NodePort
+
+- name: delete step-ca pods
+  block:
+    - name: list smallstep certificates pods
+      community.kubernetes.k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: smallstep-ca
+        label_selectors:
+          - app.kubernetes.io/name=step-certificates
+      register: step_ca_pods
+
+    - name: delete smallstep certificates pods
+      community.kubernetes.k8s:
+        state: absent
+        api_version: "{{ item.apiVersion }}"
+        kind: "{{ item.kind }}"
+        name: "{{ item.metadata.name }}"
+        namespace: "{{ item.metadata.namespace }}"
+      loop: "{{ step_ca_pods.resources }}"

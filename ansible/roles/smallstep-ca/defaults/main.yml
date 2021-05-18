@@ -1,1 +1,66 @@
 kubernetes_pki_directory: /var/lib/rancher/rke2/server/tls
+stepca_dns_name: ca.prod.ryezone.com
+stepca_nodeport: 32400
+
+stepca_oidc_name: Okta Provisioner
+stepca_oidc_client_id: "{{ lookup('password', 'secrets/smallstep_oidc_clientid chars=ascii_letters,digits length=256') }}"
+stepca_oidc_client_secret: "{{ lookup('password', 'secrets/smallstep_oidc_clientsecret chars=ascii_letters,digits length=256') }}"
+stepca_oidc_configuration_endpoint: https://dev-199614.oktapreview.com/.well-known/openid-configuration
+stepca_oidc_admins:
+  - esten.rye@protolabs.com
+stepca_oidc_domains:
+  - protolabs.com
+
+stepca_root_ca_curve: secp384r1
+stepca_root_ca_password: "{{ lookup('password', 'secrets/smallstep_root_ca_key_password chars=ascii_letters,digits length=256') }}"
+stepca_root_ca_common_name: Ryezone Labs Root CA
+stepca_root_ca_organization_name: Ryezone Labs
+stepca_root_ca_country_name: US
+stepca_root_ca_locality_name: Minnesota
+stepca_root_ca_pathlen: 1
+stepca_root_ca_not_before: +0s
+stepca_root_ca_not_after: +3650d
+stepca_root_ca_fingerprint: figure out a way to dynamically calculate. #Todo
+
+stepca_intermediate_ca_curve: secp384r1
+stepca_intermediate_ca_password: "{{ lookup('password', 'secrets/smallstep_intermediate_ca_key_password chars=ascii_letters,digits length=256') }}"
+stepca_intermediate_ca_common_name: Ryezone Labs Intermediate CA
+stepca_intermediate_ca_organization_name: Ryezone Labs
+stepca_intermediate_ca_country_name: US
+stepca_intermediate_ca_locality_name: Minnesota
+stepca_intermediate_ca_pathlen: 0
+stepca_intermediate_ca_not_before: +0s
+stepca_intermediate_ca_not_after: +1824d
+
+stepca_ssh_host_ca_ecdsa_bits: 384
+stepca_ssh_host_ca_password: "{{ stepca_intermediate_ca_password }}"
+
+stepca_ssh_user_ca_ecdsa_bits: 384
+stepca_ssh_user_ca_password: "{{ stepca_intermediate_ca_password }}"
+
+stepca_k8s_namespace: smallstep-ca
+
+stepca_mariadb_helm_release_name: mariadb
+stepca_mariadb_helm_chart_version: 9.3.11
+stepca_mariadb_architecture: standalone
+stepca_mariadb_database: smallstepca
+stepca_mariadb_user_username: stepca
+stepca_mariadb_user_password: "{{ lookup('password', 'secrets/step-ca_user_password chars=ascii_letters,digits length=64') }}"
+stepca_mariadb_replication_username: replicationUser
+stepca_mariadb_replication_password: "{{ lookup('password', 'secrets/step-ca_replication_password chars=ascii_letters,digits length=64') }}"
+stepca_mariadb_root_password: "{{ lookup('password', 'secrets/step-ca_root_password chars=ascii_letters,digits length=64') }}"
+stepca_mariadb_storage_class: "truenas-iscsi-csi"
+stepca_mariadb_size: 8Gi
+stepca_mariadb_max_memory: 512Mi
+stepca_mariadb_max_cpu: 300m
+stepca_mariadb_min_memory: 100Mi
+stepca_mariadb_min_cpu: 100m
+stepca_mariadb_monitoring_enabled: true
+stepca_mariadb_monitoring_max_memory: 256Mi
+stepca_mariadb_monitoring_max_cpu: 100m
+stepca_mariadb_monitoring_min_memory: 256Mi
+stepca_mariadb_monitoring_min_cpu: 100m
+stepca_mariadb_monitoring_enabled: true
+
+stepca_stepca_helm_release_name: ryezone-ca
+stepca_stepca_helm_chart_version: 1.15.13

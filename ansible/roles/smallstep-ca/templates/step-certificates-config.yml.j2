@@ -8,17 +8,14 @@ data:
       "key": "/home/step/secrets/intermediate_ca_key",
       "address": "0.0.0.0:9000",
       "dnsNames": [
-        "ca.prod.ryezone.com",
-        "node01.prod.ryezone.com",
-        "node02.prod.ryezone.com",
-        "node03.prod.ryezone.com",
-        "ryezone-ca-step-certificates.smallstep-ca.svc.cluster.local",
+        "{{ stepca_dns_name }}",
+        "{{ stepca_stepca_helm_release_name }}-step-certificates.{{ stepca_k8s_namespace }}.svc.cluster.local",
         "127.0.0.1"
       ],
       "db": {
         "type": "mysql",
-        "dataSource": "stepca:{{ lookup('password', 'secrets/step-ca_user_password chars=ascii_letters,digits length=64') }}@tcp(mariadb:3306)/",
-        "database": "smallstepca"
+        "dataSource": "{{ stepca_mariadb_user_username }}:{{ stepca_mariadb_user_password }}@tcp({{ stepca_mariadb_helm_release_name }}:3306)/",
+        "database": "{{ stepca_mariadb_database }}"
       },
       "logger": {
         "format": "text"
@@ -50,13 +47,13 @@ data:
           },
           {
             "type": "OIDC",
-            "name": "Okta Provisioner",
-            "clientID": "{{ lookup('password', 'secrets/smallstep_oidc_clientid chars=ascii_letters,digits length=256') }}",
-            "clientSecret": "{{ lookup('password', 'secrets/smallstep_oidc_clientsecret chars=ascii_letters,digits length=256') }}",
-            "configurationEndpoint": "https://dev-199614.oktapreview.com/.well-known/openid-configuration",
-            "admins": [ "esten.rye@protolabs.com" ],
-            "domains": [ "protolabs.com" ],
-            "listenAddress": "0.0.0.0:32400",
+            "name": "{{ stepca_oidc_name }}",
+            "clientID": "{{ stepca_oidc_client_id }}",
+            "clientSecret": "{{ stepca_oidc_client_secret }}",
+            "configurationEndpoint": "{{ stepca_oidc_configuration_endpoint }}",
+            "admins": {{ stepca_oidc_admins | to_json }},
+            "domains": {{ stepca_oidc_domains | to_json }},
+            "listenAddress": "0.0.0.0:{{ stepca_nodeport }}",
             "enableSSHCA": true
           }
         ]
@@ -73,18 +70,18 @@ data:
     }
   defaults.json: |-
     {
-      "ca-url": "https://ryezone-ca-step-certificates.smallstep-ca.svc.cluster.local",
+      "ca-url": "https://{{ stepca_stepca_helm_release_name }}-step-certificates.{{ stepca_k8s_namespace }}.svc.cluster.local",
       "ca-config": "/home/step/config/ca.json",
-      "fingerprint": "1f5de65b82f4ed3f506a605afad35214c2802e4c2d36bc8dd8c964fb581b8fcd",
+      "fingerprint": "{{ stepca_root_ca_fingerprint }}",
       "root": "/home/step/certs/root_ca.crt"
     }
 kind: ConfigMap
 metadata:
   labels:
-    app.kubernetes.io/instance: ryezone-ca
+    app.kubernetes.io/instance: {{ stepca_stepca_helm_release_name }}
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: step-certificates
     app.kubernetes.io/version: 0.15.13
-    helm.sh/chart: step-certificates-1.15.13
-  name: ryezone-ca-step-certificates-config
-  namespace: smallstep-ca
+    helm.sh/chart: step-certificates-{{ stepca_stepca_helm_chart_version }}
+  name: {{ stepca_stepca_helm_release_name }}-step-certificates-config
+  namespace: {{ stepca_k8s_namespace }}
