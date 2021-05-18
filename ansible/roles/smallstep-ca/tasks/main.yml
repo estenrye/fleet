@@ -150,7 +150,7 @@
   become: true
 
 # Generate Client SSH CA Key
-- name: Generate Host SSH CA Key
+- name: Generate User SSH CA Key
   ansible.builtin.command: 
     argv:
       - ssh-keygen
