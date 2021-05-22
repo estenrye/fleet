@@ -60,7 +60,7 @@ stepca_mariadb_monitoring_max_memory: 256Mi
 stepca_mariadb_monitoring_max_cpu: 100m
 stepca_mariadb_monitoring_min_memory: 256Mi
 stepca_mariadb_monitoring_min_cpu: 100m
-stepca_mariadb_monitoring_enabled: true
 
 stepca_stepca_helm_release_name: ryezone-ca
-stepca_stepca_helm_chart_version: 1.15.13
+stepca_stepca_helm_chart_version: 1.15.15
+stepca_stepca_helm_app_version: 0.15.15

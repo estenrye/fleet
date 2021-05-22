@@ -8,6 +8,9 @@
     - name: smallstep
       repo_url: https://smallstep.github.io/helm-charts
 
+- name: Update Helm Repositories
+  command: helm repo update
+
 - name: Create CA PKI directory
   ansible.builtin.file:
     state: directory
@@ -197,25 +200,21 @@
   community.kubernetes.k8s:
     state: present
     definition: "{{ rendered_step_certificates_config }}"
-  notify: delete step-ca pods
 
 - name: Create Step Certificates Root and Intermediate Certificates
   community.kubernetes.k8s:
     state: present
     definition: "{{ rendered_step_certificates_certificates }}"
-  notify: delete step-ca pods
 
 - name: Create Step Certificates Root and Intermediate Private Keys
   community.kubernetes.k8s:
     state: present
     definition: "{{ rendered_step_certificates_secrets }}"
-  notify: delete step-ca pods
 
 - name: Create Step Certificates Intermediate Password File
   community.kubernetes.k8s:
     state: present
     definition: "{{ rendered_step_certificates_ca_password }}"
-  notify: delete step-ca pods
 
 - name: Deploy MariaDB
   community.kubernetes.helm:
@@ -291,36 +290,37 @@
         type: NodePort
         port: 443
         targetPort: 9000
+        nodePort: "{{ stepca_nodeport }}"
 
-- name: Configure NodePort
-  community.kubernetes.k8s:
-    state: present
-    definition:
-      apiVersion: v1
-      kind: Service
-      metadata:
-        annotations:
-          meta.helm.sh/release-name: "{{ stepca_stepca_helm_release_name }}"
-          meta.helm.sh/release-namespace: "{{ stepca_k8s_namespace }}"
-        labels:
-          app.kubernetes.io/instance: "{{ stepca_stepca_helm_release_name }}"
-          app.kubernetes.io/managed-by: Helm
-          app.kubernetes.io/name: step-certificates
-          app.kubernetes.io/version: 0.15.13
-          helm.sh/chart: step-certificates-{{ stepca_stepca_helm_chart_version }}
-        name: "{{ stepca_stepca_helm_release_name }}-step-certificates"
-        namespace: "{{ stepca_k8s_namespace }}"
-      spec:
-        ports:
-        - name: https
-          nodePort: "{{ stepca_nodeport }}"
-          port: 443
-          protocol: TCP
-          targetPort: 9000
-        selector:
-          app.kubernetes.io/instance: "{{ stepca_stepca_helm_release_name }}"
-          app.kubernetes.io/name: step-certificates
-        type: NodePort
+# - name: Configure NodePort
+#   community.kubernetes.k8s:
+#     state: present
+#     definition:
+#       apiVersion: v1
+#       kind: Service
+#       metadata:
+#         annotations:
+#           meta.helm.sh/release-name: "{{ stepca_stepca_helm_release_name }}"
+#           meta.helm.sh/release-namespace: "{{ stepca_k8s_namespace }}"
+#         labels:
+#           app.kubernetes.io/instance: "{{ stepca_stepca_helm_release_name }}"
+#           app.kubernetes.io/managed-by: Helm
+#           app.kubernetes.io/name: step-certificates
+#           app.kubernetes.io/version: "{{ stepca_stepca_helm_app_version }}"
+#           helm.sh/chart: step-certificates-{{ stepca_stepca_helm_chart_version }}
+#         name: "{{ stepca_stepca_helm_release_name }}-step-certificates"
+#         namespace: "{{ stepca_k8s_namespace }}"
+#       spec:
+#         ports:
+#         - name: https
+#           nodePort: "{{ stepca_nodeport }}"
+#           port: 443
+#           protocol: TCP
+#           targetPort: 9000
+#         selector:
+#           app.kubernetes.io/instance: "{{ stepca_stepca_helm_release_name }}"
+#           app.kubernetes.io/name: step-certificates
+#         type: NodePort
 
 - name: delete step-ca pods
   block:
